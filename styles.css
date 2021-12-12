@@ -1,0 +1,83 @@
+/* This is a comment */
+
+h1 {
+    font-family: "SF Pro Display","SF Pro Icons","Helvetica Neue","Helvetica","Arial",sans-serif;
+    font-size: 28px;
+    line-height: 1.09091;
+    color: #295841 ;
+}  
+
+body {
+     font-family: "SF Pro Text","Myriad Set Pro","SF Pro Icons","Apple Legacy Chevron","Helvetica Neue","Helvetica","Arial",sans-serif;
+     font-size: 18px;
+     color: #1d1d1f;
+}
+
+li{
+    font-size: 16px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: normal;
+    list-style-type: square;
+}
+
+a {
+    Color: #1d1d1f;
+    text-decoration: none;
+    
+}
+
+a:hover{text-decoration: underline;}
+
+.hexbackground {
+    background-image: url("images/Slider1.1.gif");
+    background-size: 150%;
+}
+
+.resumelistheader{
+    font-size: 18px;
+    list-style-type: none;
+    font-weight: bold;
+ }
+
+.nounderline{
+    Color: #1d1d1f;
+    text-decoration: none;
+ }
+
+.bold{font-weight: bold;}
+.nounderline{text-decoration: underline;}
+.italic{font-style: italic;}
+
+.justify{text-align: justify;}
+.center{text-align: center;}
+
+.box1{
+    border-width: 1px;
+    border-style: solid;
+    border-color: black;
+    border: 1px solid black;
+}
+
+.box2{
+    padding: 4px;
+    padding-right: 1in;
+    padding-inline-end: 0%;
+}
+
+.box3{
+    margin: 5px;
+}
+.box3x{
+    margin: 50px;
+}
+
+
+/*
+.box4{
+    padding-left: 10px;
+    margin: 100px;
+    border-right: solid 5px blue;
+}
+
+This is a demo to understand border, padding, and margin.
+*/
