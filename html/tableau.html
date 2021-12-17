@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!--
+             Jonathan Dickson, 
+            Last Edit Date: 2021 12 16
+        -->
+        <title>Jonathan Dickson - Tableau </title>
+        <link href="../styles/bootstyles.css" rel="stylesheet" text="text/css"/>
+        <script type="text/javascript" src="../js/noideawhatimdoing.js"></script>
+    </head>
+    <body>
+        <nav class="white"><!--Navigation-->
+            <div class="uselessRequirementFilling"><!--This Div is only here to fulfill the requirements: " Implement three < div > elements that each user a custom style for positioning... 
+                (1) expands and contracts horizontally as the page is resized, and (2) includes the intra-site navigation links here"-->
+                <div class="dropdown">
+                    <button onclick="myFunction()" class="dropbtn">≡</button>
+                    <div id="myDropdown" class="dropdown-content">
+                    <a href="../index.html">Home</a>
+                    <a href="aboutme.html">About Me</a>
+                    <a href="tableau.html">Tableau</a>
+                    <a href="contact.html">Contact</a>
+                    </div>
+                </div>
+                <div class="vertical-center"><h1> GLOBAL SUPERSTORE DATA </h1></div>
+            </div>
+        </nav>
+        <a class="container box" href="#tab1">Viz 1</a>
+        <a class="container box" href="#tab2">Viz 2</a>
+        <a class="container box" href="#tab3">Viz 3</a>
+        <a class="container box" href="#tab4">Viz 4</a>
+        <div class="floatingrectangle" id="tab1"><!--Tableau1-->
+            <div class='tableauPlaceholder TableauRec' id='viz1639641639809' style='position: relative'><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='ProfitsState_16396414062720&#47;ProfitsState' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>                <script type='text/javascript'>                    var divElement = document.getElementById('viz1639641639809');                    var vizElement = divElement.getElementsByTagName('object')[0];                    vizElement.style.width='100%';vizElement.style.height=(divElement.offsetWidth*0.75)+'px';                    var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    vizElement.parentNode.insertBefore(scriptElement, vizElement);                </script>
+            <p> Total Profits per State in the United States </p>
+        </div>
+        <div class="floatingrectangle"  id="tab2"><!--Tableau2-->
+            <div class='tableauPlaceholder' id='viz1639646186798' style='position: relative'><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='CaliforniaProfit2013-14byMonth&#47;CaliforniaProfit2013-14byMonth' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /><param name='filter' value='publish=yes' /></object></div>                <script type='text/javascript'>                    var divElement = document.getElementById('viz1639646186798');                    var vizElement = divElement.getElementsByTagName('object')[0];                    vizElement.style.width='100%';vizElement.style.height=(divElement.offsetWidth*0.75)+'px';                    var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    vizElement.parentNode.insertBefore(scriptElement, vizElement);                </script>
+            <p> California (Highest Profit) Profits from 2013-14 by Month </p>
+        </div>
+        <div class="floatingrectangle" id="tab3"><!--Tableau3-->
+            <div class='tableauPlaceholder' id='viz1639646492410' style='position: relative'><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='CaliforniaProfitbyCategory_16396462721140&#47;CaliforniaProfit2013-14byMonth2' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>                <script type='text/javascript'>                    var divElement = document.getElementById('viz1639646492410');                    var vizElement = divElement.getElementsByTagName('object')[0];                    vizElement.style.width='100%';vizElement.style.height=(divElement.offsetWidth*0.75)+'px';                    var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    vizElement.parentNode.insertBefore(scriptElement, vizElement);                </script>
+            <p> California Total Profits by Sub-Category </p>
+        </div>
+        <div class="floatingrectangle" id="tab4"><!--Tableau4-->
+            <div class='tableauPlaceholder' id='viz1639646358041' style='position: relative'><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='CaliforniaAccessorySalesForcastto2015&#47;CaliforniaAccessorySalesForcastto2015' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='en-US' /></object></div>                <script type='text/javascript'>                    var divElement = document.getElementById('viz1639646358041');                    var vizElement = divElement.getElementsByTagName('object')[0];                    vizElement.style.width='100%';vizElement.style.height=(divElement.offsetWidth*0.75)+'px';                    var scriptElement = document.createElement('script');                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';                    vizElement.parentNode.insertBefore(scriptElement, vizElement);                </script>
+            <p> California's Accessory Sales Forecast through 2015 </p>
+        </div>
+        <div>
+            <a href="https://www.tableau.com/" class="outsidelink">
+                <span class="link">Visit Tableau.com For More</span>
+            </a> 
+        </div>
+       
+        <footer>
+            <div class="footer">
+                &copy; 2022 Jonathan Dickson 
+            </div>
+        </footer>  
+    </body>
+</html>
