@@ -437,13 +437,20 @@ YouTube
             return true;
         });
 
+        const bgOrder = { white: 0, black: 1, color: 2 };
+        filtered.sort((a, b) =>
+            (bgOrder[a.bgType] - bgOrder[b.bgType]) ||
+            (a.categoryIdx - b.categoryIdx) ||
+            a.name.localeCompare(b.name)
+        );
+
         document.getElementById('review-count').textContent = `${filtered.length} of ${apps.length}`;
         grid.innerHTML = filtered.map(app => {
             const iconHtml = app.iconUrl
                 ? `<img class="app-icon" src="${app.iconUrl}" alt="${app.name}" loading="lazy">`
                 : `<div class="app-icon-placeholder">📱</div>`;
 
-            const colorPickerHtml = app.bgType === 'color' ? `
+            const colorPickerHtml = `
                 <div class="color-cat-grid">
                     ${COLOR_CATEGORIES.map((cat, i) => `
                         <button class="color-cat-btn ${app.categoryIdx === i ? 'selected' : ''}"
@@ -455,10 +462,10 @@ YouTube
                     `).join('')}
                 </div>
                 <div class="cat-label">
-                    ${app.categoryIdx >= 0 ? COLOR_CATEGORIES[app.categoryIdx].name : 'Not set'}
+                    ${app.categoryIdx >= 0 ? COLOR_CATEGORIES[app.categoryIdx].name : '<span style="color:#636366">Not set</span>'}
                     ${app.categoryIdx === app.suggestedIdx && app.categoryIdx >= 0 ? ' <span class="auto-tag">auto</span>' : ''}
                 </div>
-            ` : '';
+            `;
 
             return `
             <div class="app-card">
