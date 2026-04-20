@@ -38,7 +38,7 @@
         .progress-fill { height: 100%; background: #0a84ff; border-radius: 3px; transition: width 0.3s; width: 0%; }
         .progress-text { font-size: 13px; color: #8e8e93; margin-top: 8px; }
 
-        #app-review-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 24px; }
+        #app-review-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 24px; }
         .app-card { background: #2c2c2e; border-radius: 12px; padding: 12px; border: 2px solid transparent; }
         .app-card:hover { border-color: #3a3a3c; }
         .app-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
@@ -52,11 +52,14 @@
         .bg-btn.active-black { background: #1c1c1e; color: #fff; border-color: #636366; }
         .bg-btn.active-color { background: #0a84ff; color: #fff; border-color: #0a84ff; }
 
-        .hue-row { display: flex; align-items: center; gap: 8px; }
-        .hue-slider { flex: 1; height: 8px; border-radius: 4px; cursor: pointer; -webkit-appearance: none; appearance: none; background: linear-gradient(to right, hsl(0,80%,50%), hsl(30,80%,50%), hsl(60,80%,50%), hsl(90,80%,50%), hsl(120,80%,50%), hsl(150,80%,50%), hsl(180,80%,50%), hsl(210,80%,50%), hsl(240,80%,50%), hsl(270,80%,50%), hsl(300,80%,50%), hsl(330,80%,50%), hsl(360,80%,50%)); }
-        .hue-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: white; border: 2px solid rgba(0,0,0,0.3); cursor: pointer; }
-        .hue-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: white; border: 2px solid rgba(0,0,0,0.3); cursor: pointer; }
-        .color-swatch { width: 24px; height: 24px; border-radius: 6px; border: 2px solid rgba(255,255,255,0.2); flex-shrink: 0; }
+        .color-cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 6px; }
+        .color-cat-btn { width: 100%; aspect-ratio: 1; border-radius: 50%; border: 2px solid transparent; cursor: pointer; position: relative; transition: all 0.15s; background-size: cover; }
+        .color-cat-btn:hover { transform: scale(1.1); }
+        .color-cat-btn.selected { border-color: white; box-shadow: 0 0 0 2px #2c2c2e, 0 0 0 4px white; }
+        .suggest-dot { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: white; border-radius: 50%; }
+
+        .cat-label { font-size: 12px; color: #8e8e93; text-align: center; height: 16px; line-height: 1; }
+        .auto-tag { font-size: 10px; color: #0a84ff; font-weight: 600; }
 
         .review-controls { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
         .search-input { padding: 8px 14px; background: #2c2c2e; border: 1px solid #3a3a3c; border-radius: 8px; color: #f2f2f7; font-size: 14px; outline: none; flex: 1; min-width: 200px; }
@@ -124,7 +127,7 @@
             <h2>Step 1 — Enter Your Apps</h2>
             <p class="hint">
                 One app per line. Prefix with <code>[white]</code> or <code>[black]</code> for icon background type.<br>
-                White apps first, black second, then colorful sorted by hue.
+                White apps first, black second, then colorful sorted by category.
             </p>
             <textarea id="app-input" placeholder="Spotify
 [white] Calculator
@@ -147,7 +150,7 @@ YouTube
 
         <!-- STEP 2: REVIEW -->
         <section id="section-2">
-            <h2>Step 2 — Review & Adjust Colors</h2>
+            <h2>Step 2 — Review & Pick Colors</h2>
             <div class="review-controls">
                 <input type="text" class="search-input" id="review-search" placeholder="Search apps...">
                 <button class="filter-btn" id="filter-all">All</button>
@@ -200,6 +203,21 @@ YouTube
     <div class="toast" id="toast"></div>
 
     <script>
+    const COLOR_CATEGORIES = [
+        { name: 'Red',     hue: 0,   color: '#ff3b30' },
+        { name: 'Orange',  hue: 25,  color: '#ff9500' },
+        { name: 'Amber',   hue: 40,  color: '#ffcc00' },
+        { name: 'Yellow',  hue: 55,  color: '#ffeb00' },
+        { name: 'Lime',    hue: 80,  color: '#8db600' },
+        { name: 'Green',   hue: 120, color: '#34c759' },
+        { name: 'Teal',    hue: 165, color: '#00c7be' },
+        { name: 'Cyan',    hue: 200, color: '#32ade6' },
+        { name: 'Blue',    hue: 230, color: '#007aff' },
+        { name: 'Indigo',  hue: 260, color: '#5856d6' },
+        { name: 'Purple',  hue: 290, color: '#af52de' },
+        { name: 'Pink',    hue: 330, color: '#ff2d55' },
+    ];
+
     let apps = [];
     let folders = [];
     let currentPage = 0;
@@ -239,6 +257,17 @@ YouTube
             }
         }
         return [h * 360, s * 100, l * 100];
+    }
+
+    function hueToCategory(rawHue) {
+        if (rawHue === null || rawHue === undefined) return -1;
+        let bestIdx = 0, bestDist = 360;
+        COLOR_CATEGORIES.forEach((cat, i) => {
+            let dist = Math.abs(rawHue - cat.hue);
+            if (dist > 180) dist = 360 - dist;
+            if (dist < bestDist) { bestDist = dist; bestIdx = i; }
+        });
+        return bestIdx;
     }
 
     async function fetchAppIcon(name) {
@@ -312,7 +341,7 @@ YouTube
                     bgType = match[1].toLowerCase();
                     name = match[2].trim();
                 }
-                return { id: uid(), name, bgType, iconUrl: null, hue: 0, sat: 70, light: 50, colorFailed: false };
+                return { id: uid(), name, bgType, iconUrl: null, hue: 0, categoryIdx: -1, suggestedIdx: -1, colorFailed: false };
             });
     }
 
@@ -345,10 +374,16 @@ YouTube
             const batch = needFetch.slice(i, i + BATCH);
             await Promise.all(batch.map(async app => {
                 if (!app.iconUrl) app.iconUrl = await fetchAppIcon(app.name);
-                if (app.iconUrl && app.hue === 0) {
-                    const hue = await extractHueFromUrl(app.iconUrl);
-                    app.hue = hue !== null ? hue : 0;
-                    if (hue === null) app.colorFailed = true;
+                if (app.iconUrl && app.categoryIdx === -1) {
+                    const rawHue = await extractHueFromUrl(app.iconUrl);
+                    if (rawHue !== null) {
+                        const catIdx = hueToCategory(rawHue);
+                        app.suggestedIdx = catIdx;
+                        app.categoryIdx = catIdx;
+                        app.hue = COLOR_CATEGORIES[catIdx].hue;
+                    } else {
+                        app.colorFailed = true;
+                    }
                 }
                 done++;
                 const pct = Math.round((done / needFetch.length) * 100);
@@ -404,10 +439,26 @@ YouTube
 
         document.getElementById('review-count').textContent = `${filtered.length} of ${apps.length}`;
         grid.innerHTML = filtered.map(app => {
-            const hsl = `hsl(${app.hue}, 70%, 50%)`;
             const iconHtml = app.iconUrl
                 ? `<img class="app-icon" src="${app.iconUrl}" alt="${app.name}" loading="lazy">`
                 : `<div class="app-icon-placeholder">📱</div>`;
+
+            const colorPickerHtml = app.bgType === 'color' ? `
+                <div class="color-cat-grid">
+                    ${COLOR_CATEGORIES.map((cat, i) => `
+                        <button class="color-cat-btn ${app.categoryIdx === i ? 'selected' : ''}"
+                                style="background:${cat.color}"
+                                onclick="setCategory('${app.id}', ${i})"
+                                title="${cat.name}">
+                            ${app.suggestedIdx === i && app.categoryIdx !== i ? '<span class="suggest-dot"></span>' : ''}
+                        </button>
+                    `).join('')}
+                </div>
+                <div class="cat-label">
+                    ${app.categoryIdx >= 0 ? COLOR_CATEGORIES[app.categoryIdx].name : 'Not set'}
+                    ${app.categoryIdx === app.suggestedIdx && app.categoryIdx >= 0 ? ' <span class="auto-tag">auto</span>' : ''}
+                </div>
+            ` : '';
 
             return `
             <div class="app-card">
@@ -423,11 +474,7 @@ YouTube
                     <button class="bg-btn ${app.bgType === 'black' ? 'active-black' : ''}"
                             onclick="setBgType('${app.id}', 'black')">Black</button>
                 </div>
-                <div class="hue-row">
-                    <input type="range" class="hue-slider" min="0" max="360" value="${app.hue}"
-                           oninput="setHue('${app.id}', this.value)">
-                    <div class="color-swatch" style="background: ${hsl}" data-swatch="${app.id}"></div>
-                </div>
+                ${colorPickerHtml}
             </div>`;
         }).join('');
     }
@@ -437,12 +484,12 @@ YouTube
         if (app) { app.bgType = type; renderReview(); }
     };
 
-    window.setHue = function(id, hue) {
+    window.setCategory = function(id, catIdx) {
         const app = apps.find(a => a.id === id);
         if (app) {
-            app.hue = parseInt(hue);
-            const swatch = document.querySelector(`[data-swatch="${id}"]`);
-            if (swatch) swatch.style.background = `hsl(${hue}, 70%, 50%)`;
+            app.categoryIdx = catIdx;
+            app.hue = COLOR_CATEGORIES[catIdx].hue;
+            renderReview();
         }
     };
 
@@ -464,34 +511,37 @@ YouTube
     });
 
     function sortAndGroupApps() {
-        const whites = apps.filter(a => a.bgType === 'white').sort((a, b) => a.hue - b.hue || a.light - b.light);
-        const blacks = apps.filter(a => a.bgType === 'black').sort((a, b) => a.hue - b.hue || a.light - b.light);
-        const colors = apps.filter(a => a.bgType === 'color').sort((a, b) => a.hue - b.hue || a.light - b.light);
+        const whites = apps.filter(a => a.bgType === 'white').sort((a, b) => a.hue - b.hue);
+        const blacks = apps.filter(a => a.bgType === 'black').sort((a, b) => a.hue - b.hue);
+        const colors = apps.filter(a => a.bgType === 'color').sort((a, b) => a.hue - b.hue);
 
-        return [...groupByHue(whites), ...groupByHue(blacks), ...groupByHue(colors)];
+        return [...groupByCategory(whites), ...groupByCategory(blacks), ...groupByCategory(colors)];
     }
 
-    function groupByHue(group) {
+    function groupByCategory(group) {
         if (group.length === 0) return [];
 
-        const GAP = 20;
-        const folders = [];
-        let current = [group[0]];
-
-        for (let i = 1; i < group.length; i++) {
-            const prev = group[i - 1];
-            const curr = group[i];
-            let diff = Math.abs(curr.hue - prev.hue);
-            if (diff > 180) diff = 360 - diff;
-
-            if (current.length >= 9 || diff > GAP) {
-                folders.push([...current]);
-                current = [];
-            }
-            current.push(curr);
+        const byCategory = {};
+        for (const app of group) {
+            const key = app.categoryIdx;
+            if (!byCategory[key]) byCategory[key] = [];
+            byCategory[key].push(app);
         }
-        if (current.length > 0) folders.push(current);
 
+        const sortedKeys = Object.keys(byCategory).sort((a, b) => {
+            const hueA = a === '-1' ? -1 : COLOR_CATEGORIES[parseInt(a)].hue;
+            const hueB = b === '-1' ? -1 : COLOR_CATEGORIES[parseInt(b)].hue;
+            return hueA - hueB;
+        });
+
+        const folders = [];
+        for (const key of sortedKeys) {
+            const catApps = byCategory[key];
+            catApps.sort((a, b) => a.name.localeCompare(b.name));
+            for (let i = 0; i < catApps.length; i += 9) {
+                folders.push(catApps.slice(i, i + 9));
+            }
+        }
         return folders;
     }
 
@@ -591,7 +641,7 @@ YouTube
         const colorLabel = sample ? (
             sample.bgType === 'white' ? 'White BG' :
             sample.bgType === 'black' ? 'Black BG' :
-            hueLabel(sample.hue)
+            (sample.categoryIdx >= 0 ? COLOR_CATEGORIES[sample.categoryIdx].name : 'Other')
         ) : 'Empty';
 
         detailTitle.textContent = `Folder ${folderIdx + 1} — ${colorLabel} (${folder.filter(Boolean).length}/9)`;
@@ -607,7 +657,7 @@ YouTube
             return `<div class="folder-detail-app">
                 ${app.iconUrl
                     ? `<img class="folder-detail-icon" src="${app.iconUrl}" alt="${app.name}">`
-                    : `<div class="folder-detail-icon" style="background:hsl(${app.hue},70%,50%)"></div>`}
+                    : `<div class="folder-detail-icon" style="background:${app.categoryIdx >= 0 ? COLOR_CATEGORIES[app.categoryIdx].color : '#555'}"></div>`}
                 <span class="folder-detail-name">${app.name}</span>
             </div>`;
         }).join('');
@@ -615,19 +665,6 @@ YouTube
         detail.style.display = 'block';
         detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     };
-
-    function hueLabel(hue) {
-        const ranges = [
-            [0, 10, 'Red'], [10, 25, 'Red-Orange'], [25, 45, 'Orange'],
-            [45, 65, 'Yellow'], [65, 90, 'Y-Green'], [90, 150, 'Green'],
-            [150, 185, 'Teal'], [185, 215, 'Cyan'], [215, 255, 'Blue'],
-            [255, 275, 'Indigo'], [275, 310, 'Purple'], [310, 345, 'Pink'], [345, 360, 'Red']
-        ];
-        for (const [lo, hi, label] of ranges) {
-            if (hue >= lo && hue < hi) return label;
-        }
-        return 'Color';
-    }
 
     document.getElementById('btn-back-2').addEventListener('click', () => {
         renderReview();
@@ -657,7 +694,7 @@ YouTube
             const colorLabel = sample ? (
                 sample.bgType === 'white' ? 'White BG' :
                 sample.bgType === 'black' ? 'Black BG' :
-                hueLabel(sample.hue)
+                (sample.categoryIdx >= 0 ? COLOR_CATEGORIES[sample.categoryIdx].name : 'Other')
             ) : '';
 
             text += `Folder ${fi + 1} [${colorLabel}] (${folder.filter(Boolean).length}/9):\n`;
