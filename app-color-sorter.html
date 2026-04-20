@@ -201,7 +201,7 @@ YouTube
         </section>
     </div>
 
-    <div id="search-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:2000;align-items:center;justify-content:center;flex-direction:column">
+    <div id="search-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:2000;align-items:center;justify-content:center;flex-direction:column;padding:20px">
         <div style="background:#2c2c2e;border-radius:16px;padding:24px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto">
             <h3 style="font-size:18px;font-weight:600;margin-bottom:16px;color:#ebebf5">Search for App Icon</h3>
             <input type="text" id="search-input" placeholder="Enter app name…" style="width:100%;padding:10px;background:#1c1c1e;border:1px solid #3a3a3c;border-radius:8px;color:#f2f2f7;font-size:14px;margin-bottom:16px;outline:none">
@@ -230,6 +230,8 @@ YouTube
         { name: 'Indigo',  hue: 260, color: '#5856d6' },
         { name: 'Purple',  hue: 290, color: '#af52de' },
         { name: 'Pink',    hue: 330, color: '#ff2d55' },
+        { name: 'White',   hue: -1,  color: '#ffffff' },
+        { name: 'Black',   hue: -2,  color: '#000000' },
     ];
 
     let apps = [];
@@ -585,12 +587,16 @@ YouTube
         const input = document.getElementById('search-input');
         modal.style.display = 'flex';
         input.value = app.name;
-        input.focus();
-        handleSearchInput();
+        setTimeout(() => {
+            input.focus();
+            input.select();
+            handleSearchInput();
+        }, 50);
     };
 
     window.closeSearchModal = function() {
-        document.getElementById('search-modal').style.display = 'none';
+        const modal = document.getElementById('search-modal');
+        modal.style.display = 'none';
         currentSearchAppId = null;
     };
 
@@ -664,9 +670,14 @@ YouTube
     });
 
     function sortAndGroupApps() {
-        const whites = apps.filter(a => a.bgType === 'white').sort((a, b) => a.hue - b.hue);
-        const blacks = apps.filter(a => a.bgType === 'black').sort((a, b) => a.hue - b.hue);
-        const colors = apps.filter(a => a.bgType === 'color').sort((a, b) => a.hue - b.hue);
+        const sortByHue = (a, b) => {
+            const hueA = a.hue < 0 ? 361 : a.hue;
+            const hueB = b.hue < 0 ? 361 : b.hue;
+            return hueA - hueB;
+        };
+        const whites = apps.filter(a => a.bgType === 'white').sort(sortByHue);
+        const blacks = apps.filter(a => a.bgType === 'black').sort(sortByHue);
+        const colors = apps.filter(a => a.bgType === 'color').sort(sortByHue);
 
         return [...groupByCategory(whites), ...groupByCategory(blacks), ...groupByCategory(colors)];
     }
@@ -682,9 +693,13 @@ YouTube
         }
 
         const sortedKeys = Object.keys(byCategory).sort((a, b) => {
-            const hueA = a === '-1' ? -1 : COLOR_CATEGORIES[parseInt(a)].hue;
-            const hueB = b === '-1' ? -1 : COLOR_CATEGORIES[parseInt(b)].hue;
-            return hueA - hueB;
+            const catA = parseInt(a);
+            const catB = parseInt(b);
+            const hueA = catA >= 0 && catA < COLOR_CATEGORIES.length ? COLOR_CATEGORIES[catA].hue : -1;
+            const hueB = catB >= 0 && catB < COLOR_CATEGORIES.length ? COLOR_CATEGORIES[catB].hue : -1;
+            const sortA = hueA < 0 ? 361 : hueA;
+            const sortB = hueB < 0 ? 361 : hueB;
+            return sortA - sortB;
         });
 
         const folders = [];
