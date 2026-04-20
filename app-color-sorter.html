@@ -201,6 +201,19 @@ YouTube
         </section>
     </div>
 
+    <div id="search-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:2000;align-items:center;justify-content:center;flex-direction:column">
+        <div style="background:#2c2c2e;border-radius:16px;padding:24px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto">
+            <h3 style="font-size:18px;font-weight:600;margin-bottom:16px;color:#ebebf5">Search for App Icon</h3>
+            <input type="text" id="search-input" placeholder="Enter app name…" style="width:100%;padding:10px;background:#1c1c1e;border:1px solid #3a3a3c;border-radius:8px;color:#f2f2f7;font-size:14px;margin-bottom:16px;outline:none">
+            <div id="search-results" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;min-height:200px">
+                <p style="grid-column:1/-1;color:#8e8e93;text-align:center">Enter a search term…</p>
+            </div>
+            <div style="display:flex;gap:12px;justify-content:flex-end">
+                <button onclick="closeSearchModal()" style="padding:10px 20px;background:#3a3a3c;color:#f2f2f7;border:none;border-radius:8px;cursor:pointer;font-weight:600">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast" id="toast"></div>
 
     <script>
@@ -472,7 +485,9 @@ YouTube
         grid.innerHTML = filtered.map(app => {
             const iconHtml = app.iconUrl
                 ? `<img class="app-icon" src="${app.iconUrl}" alt="${app.name}" loading="lazy">`
-                : `<div class="app-icon-placeholder">📱</div>`;
+                : `<div class="app-icon-placeholder" style="cursor:pointer;position:relative" onclick="openSearchModal('${app.id}')" title="Click to search">
+                    📱<span style="position:absolute;top:-6px;right:-6px;background:#ff3b30;color:white;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px">!</span>
+                  </div>`;
 
             const catName = app.categoryIdx >= 0
                 ? COLOR_CATEGORIES[app.categoryIdx].name
@@ -561,6 +576,74 @@ YouTube
         showToast(app.categoryIdx >= 0 ? `Detected: ${COLOR_CATEGORIES[app.categoryIdx].name}` : 'Could not detect color');
         renderReview();
     };
+
+    let currentSearchAppId = null;
+    window.openSearchModal = function(appId) {
+        currentSearchAppId = appId;
+        const app = apps.find(a => a.id === appId);
+        const modal = document.getElementById('search-modal');
+        const input = document.getElementById('search-input');
+        modal.style.display = 'flex';
+        input.value = app.name;
+        input.focus();
+        handleSearchInput();
+    };
+
+    window.closeSearchModal = function() {
+        document.getElementById('search-modal').style.display = 'none';
+        currentSearchAppId = null;
+    };
+
+    async function handleSearchInput() {
+        const input = document.getElementById('search-input');
+        const query = input.value.trim();
+        const resultsDiv = document.getElementById('search-results');
+
+        if (!query) {
+            resultsDiv.innerHTML = '<p style="grid-column:1/-1;color:#8e8e93;text-align:center">Enter a search term…</p>';
+            return;
+        }
+
+        resultsDiv.innerHTML = '<p style="grid-column:1/-1;color:#8e8e93;text-align:center">Searching…</p>';
+
+        try {
+            const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=software&limit=20&country=us`;
+            const resp = await fetch(url);
+            const data = await resp.json();
+
+            if (!data.results || data.results.length === 0) {
+                resultsDiv.innerHTML = '<p style="grid-column:1/-1;color:#8e8e93;text-align:center">No results found</p>';
+                return;
+            }
+
+            resultsDiv.innerHTML = data.results.map(r => `
+                <div style="cursor:pointer;text-align:center" onclick="selectIcon('${r.artworkUrl512 || r.artworkUrl100}', '${currentSearchAppId}')">
+                    <img src="${r.artworkUrl100}" style="width:100%;border-radius:12px;border:2px solid transparent;transition:border 0.15s"
+                         onmouseover="this.style.borderColor='#0a84ff'" onmouseout="this.style.borderColor='transparent'">
+                    <p style="font-size:11px;color:#8e8e93;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.trackName}</p>
+                </div>
+            `).join('');
+        } catch (e) {
+            resultsDiv.innerHTML = '<p style="grid-column:1/-1;color:#ff3b30">Search failed</p>';
+        }
+    }
+
+    window.selectIcon = function(iconUrl, appId) {
+        const app = apps.find(a => a.id === appId);
+        if (app) {
+            app.iconUrl = iconUrl;
+            closeSearchModal();
+            showToast(`Icon updated for ${app.name}`);
+            renderReview();
+        }
+    };
+
+    document.getElementById('search-modal').addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') handleSearchInput();
+        else if (e.key === 'Escape') closeSearchModal();
+    });
+
+    document.getElementById('search-input').addEventListener('input', handleSearchInput);
 
     document.getElementById('btn-rescan').addEventListener('click', async () => {
         const unset = apps.filter(a => a.categoryIdx === -1 && a.iconUrl);
