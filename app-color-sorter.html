@@ -201,6 +201,16 @@ YouTube
         </section>
     </div>
 
+    <div id="folder-editor-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:2001;align-items:center;justify-content:center;flex-direction:column;padding:20px">
+        <div style="background:#2c2c2e;border-radius:16px;padding:24px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto">
+            <h3 style="font-size:18px;font-weight:600;margin-bottom:16px;color:#ebebf5" id="editor-title">Edit Folder</h3>
+            <div id="folder-editor-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;max-height:400px;overflow-y:auto;padding:12px;background:#1c1c1e;border-radius:8px"></div>
+            <div style="display:flex;gap:12px;justify-content:flex-end">
+                <button onclick="closeFolderEditor()" style="padding:10px 20px;background:#3a3a3c;color:#f2f2f7;border:none;border-radius:8px;cursor:pointer;font-weight:600">Done</button>
+            </div>
+        </div>
+    </div>
+
     <div id="search-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:2000;align-items:center;justify-content:center;flex-direction:column;padding:20px">
         <div style="background:#2c2c2e;border-radius:16px;padding:24px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto">
             <h3 style="font-size:18px;font-weight:600;margin-bottom:16px;color:#ebebf5">Search for App Icon</h3>
@@ -651,6 +661,56 @@ YouTube
 
     document.getElementById('search-input').addEventListener('input', handleSearchInput);
 
+    let currentFolderIdx = null;
+    let currentSlotIdx = null;
+
+    window.editFolderSlot = function(folderIdx, slotIdx) {
+        currentFolderIdx = folderIdx;
+        currentSlotIdx = slotIdx;
+        const folder = folders[folderIdx];
+        const folderModal = document.getElementById('folder-editor-modal');
+        const grid = document.getElementById('folder-editor-grid');
+
+        const title = document.getElementById('editor-title');
+        const current = folder[slotIdx];
+        title.textContent = `Slot ${slotIdx + 1} — ${current ? 'Change to:' : 'Add app:'}`;
+
+        // Show all apps, highlight current, click to swap
+        grid.innerHTML = apps.map((app, idx) => `
+            <div onclick="swapApp(${idx})" style="cursor:pointer;text-align:center;padding:8px;border-radius:8px;${folder.includes(app) ? 'background:#0a84ff' : 'background:#3a3a3c'};transition:all 0.15s" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
+                ${app.iconUrl ? `<img src="${app.iconUrl}" style="width:100%;border-radius:6px;margin-bottom:4px">` : '<div style="aspect-ratio:1;background:#555;border-radius:6px;margin-bottom:4px;display:flex;align-items:center;justify-content:center">📱</div>'}
+                <p style="font-size:10px;color:#f2f2f7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${app.name}</p>
+            </div>
+        `).join('');
+
+        folderModal.style.display = 'flex';
+    };
+
+    window.swapApp = function(appIdx) {
+        const app = apps[appIdx];
+        const folder = folders[currentFolderIdx];
+        const currentApp = folder[currentSlotIdx];
+
+        // Remove from current position if already in folder
+        const existingIdx = folder.indexOf(app);
+        if (existingIdx !== -1) {
+            folder[existingIdx] = null;
+        }
+
+        // Add to slot (overwriting null/existing)
+        folder[currentSlotIdx] = app;
+
+        closeFolderEditor();
+        renderPage(currentPage);
+        showToast(`Updated folder`);
+    };
+
+    window.closeFolderEditor = function() {
+        document.getElementById('folder-editor-modal').style.display = 'none';
+        currentFolderIdx = null;
+        currentSlotIdx = null;
+    };
+
     document.getElementById('btn-rescan').addEventListener('click', async () => {
         const unset = apps.filter(a => a.categoryIdx === -1 && a.iconUrl);
         if (unset.length === 0) { showToast('All apps already have colors set.'); return; }
@@ -757,16 +817,17 @@ YouTube
             const appSlots = [];
             for (let i = 0; i < 9; i++) {
                 const app = folder[i] || null;
+                const folderNum = start + idx;
                 if (app && app.iconUrl) {
-                    appSlots.push(`<div class="folder-icon-slot"><img src="${app.iconUrl}" alt="${app.name}" loading="lazy"></div>`);
+                    appSlots.push(`<div class="folder-icon-slot" onclick="editFolderSlot(${folderNum}, ${i})" style="cursor:pointer" title="Click to change"><img src="${app.iconUrl}" alt="${app.name}" loading="lazy"></div>`);
                 } else {
-                    appSlots.push(`<div class="folder-icon-slot empty"></div>`);
+                    appSlots.push(`<div class="folder-icon-slot empty" onclick="editFolderSlot(${folderNum}, ${i})" style="cursor:pointer" title="Click to add"></div>`);
                 }
             }
 
             const folderNum = start + idx;
             return `
-                <div class="folder-cell" onclick="showFolderDetail(${folderNum})">
+                <div class="folder-cell">
                     ${appSlots.join('')}
                 </div>`;
         }).join('');
